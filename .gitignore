@@ -15,6 +15,7 @@ __pycache__/
 # Build outputs
 dist/
 build/
+*.tsbuildinfo
 
 # IDE
 .vscode/

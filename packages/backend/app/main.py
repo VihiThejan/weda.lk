@@ -7,11 +7,15 @@ from app.api.health import router as health_router
 from app.api.v1.router import router as api_v1_router
 from app.core.config import settings
 from app.core.database import MongoConnection
+from app.repositories.user_repository import UserRepository
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     await MongoConnection.connect()
+    # Ensure unique email index exists
+    db = MongoConnection.get_db()
+    await UserRepository(db).ensure_indexes()
     yield
     await MongoConnection.disconnect()
 
