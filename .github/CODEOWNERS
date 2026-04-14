@@ -1,0 +1,9 @@
+# Example ownership map (update team handles)
+
+/packages/frontend/src/common/ @frontend-architecture-team
+/packages/frontend/src/features/ @frontend-feature-team
+/packages/backend/app/core/ @backend-platform-team
+/packages/backend/app/api/ @backend-api-team
+/packages/backend/app/services/ @backend-domain-team
+/packages/backend/app/repositories/ @backend-data-team
+/docs/ @tech-leads

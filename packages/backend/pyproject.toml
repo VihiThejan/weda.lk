@@ -1,0 +1,24 @@
+[project]
+name = "platform-backend"
+version = "0.1.0"
+description = "FastAPI backend for maintenance provider platform"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "motor>=3.6.0",
+  "pydantic-settings>=2.9.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0",
+  "httpx>=0.28.0",
+  "ruff>=0.11.0"
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+pythonpath = ["app"]
