@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../auth/AuthContext";
 import type { UserRole } from "../../../auth/types";
@@ -65,6 +65,21 @@ export function SignUpPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const strength = getPasswordStrength(password);
+
+  // Clear form when role changes
+  useEffect(() => {
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
+    setAgreedToTerms(false);
+    setBusinessName("");
+    setSelectedServices([]);
+    setAddress("");
+    setError("");
+  }, [role]);
 
   function toggleService(svc: string) {
     setSelectedServices((prev) =>
