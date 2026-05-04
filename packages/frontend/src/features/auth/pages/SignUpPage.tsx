@@ -60,6 +60,8 @@ export function SignUpPage() {
   const [businessName, setBusinessName] = useState("");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [address, setAddress] = useState("");
+  const [description, setDescription] = useState("");
+  const [skills, setSkills] = useState("");
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -78,6 +80,8 @@ export function SignUpPage() {
     setBusinessName("");
     setSelectedServices([]);
     setAddress("");
+    setDescription("");
+    setSkills("");
     setError("");
   }, [role]);
 
@@ -107,6 +111,14 @@ export function SignUpPage() {
       setError("Please select at least one service type.");
       return;
     }
+    if (role === "provider" && !description.trim()) {
+      setError("Please provide a professional summary of your work experience and background.");
+      return;
+    }
+    if (role === "provider" && !skills.trim()) {
+      setError("Please list the skills you specialize in.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -119,6 +131,8 @@ export function SignUpPage() {
           business_name: businessName || undefined,
           service_types: selectedServices,
           address: address || undefined,
+          description: description,
+          skills: skills,
         }),
       });
       navigate(role === "customer" ? "/dashboard/customer" : "/dashboard/provider", { replace: true });
@@ -300,6 +314,34 @@ export function SignUpPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="field-group">
+                <label className="field-label" htmlFor="su-description">Professional Summary *</label>
+                <textarea
+                  id="su-description"
+                  className="auth-input provider"
+                  placeholder="Describe your work experience, background, and expertise in your field of service..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  rows={4}
+                  style={{ fontFamily: "inherit", resize: "vertical", minHeight: "100px" }}
+                />
+              </div>
+
+              <div className="field-group">
+                <label className="field-label" htmlFor="su-skills">Core Skills *</label>
+                <textarea
+                  id="su-skills"
+                  className="auth-input provider"
+                  placeholder="List the key skills and specializations you offer (e.g., Plumbing repairs, Water system maintenance, Emergency leak fixes)..."
+                  value={skills}
+                  onChange={(e) => setSkills(e.target.value)}
+                  required
+                  rows={3}
+                  style={{ fontFamily: "inherit", resize: "vertical", minHeight: "80px" }}
+                />
               </div>
             </>
           )}
