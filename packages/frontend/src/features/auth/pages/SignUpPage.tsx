@@ -4,16 +4,26 @@ import { useAuth } from "../../../auth/AuthContext";
 import type { UserRole } from "../../../auth/types";
 
 const SERVICE_TYPES = [
-  "Plumbing",
-  "Electrical",
-  "Air Conditioning",
-  "Carpentry",
-  "Painting",
-  "Cleaning",
+  "Masons",
+  "Carpenters",
+  "Tile",
+  "Plumbers",
+  "Electricians",
+  "Technicians",
+  "Painters",
   "Landscaping",
-  "Security",
-  "Appliance Repair",
-  "Roofing",
+  "Welding",
+  "Air Conditioning",
+  "Cleaners",
+  "Vehicle Repairs",
+  "Equipment Repairs",
+  "CCTV",
+  "Ceiling",
+  "Cushion Works",
+  "Movers",
+  "Well",
+  "Aluminium",
+  "Solar Panel Fixing",
 ];
 
 function getPasswordStrength(pw: string): { level: number; label: string; cls: string } {
@@ -245,34 +255,35 @@ export function SignUpPage() {
                     onChange={(e) => setBusinessName(e.target.value)}
                   />
                 </div>
+              </div>
 
-                <div className="field-group">
-                  <label className="field-label" htmlFor="su-address">Service area / Address</label>
-                  <input
-                    id="su-address"
-                    className="auth-input provider"
-                    type="text"
-                    placeholder="Colombo 03, Western Province"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                  />
-                </div>
+              <div className="field-group">
+                <label className="field-label" htmlFor="su-address">Service area / Address *</label>
+                <input
+                  id="su-address"
+                  className="auth-input provider"
+                  type="text"
+                  placeholder="Colombo 03, Western Province"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
 
-                <div className="field-group">
-                  <label className="field-label">Service types * <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(select all that apply)</span></label>
-                  <div className="chips-wrap">
-                    {SERVICE_TYPES.map((svc) => (
-                      <button
-                        key={svc}
-                        type="button"
-                        className={`chip ${selectedServices.includes(svc) ? "selected" : ""}`}
-                        onClick={() => toggleService(svc)}
-                        aria-pressed={selectedServices.includes(svc)}
-                      >
-                        {svc}
-                      </button>
-                    ))}
-                  </div>
+              <div className="field-group">
+                <label className="field-label">Service types * <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(select all that apply)</span></label>
+                <div className="chips-wrap">
+                  {SERVICE_TYPES.map((svc) => (
+                    <button
+                      key={svc}
+                      type="button"
+                      className={`chip ${selectedServices.includes(svc) ? "selected" : ""}`}
+                      onClick={() => toggleService(svc)}
+                      aria-pressed={selectedServices.includes(svc)}
+                    >
+                      {svc}
+                    </button>
+                  ))}
                 </div>
               </div>
             </>
