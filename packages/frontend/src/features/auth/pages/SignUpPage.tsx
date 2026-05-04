@@ -216,7 +216,7 @@ export function SignUpPage() {
 
           {/* ── Phone ── */}
           <div className="field-group">
-            <label className="field-label" htmlFor="su-phone">Phone number</label>
+            <label className="field-label" htmlFor="su-phone">Phone number *</label>
             <input
               id="su-phone"
               className={`auth-input ${accent}`}
@@ -225,6 +225,7 @@ export function SignUpPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               autoComplete="tel"
+              required
             />
           </div>
 
@@ -240,8 +241,8 @@ export function SignUpPage() {
                 flexDirection: "column",
                 gap: "14px",
               }}>
-                <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--provider-400)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  Business Details
+                <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  If you are an employee from any business organization
                 </p>
 
                 <div className="field-group">
@@ -255,19 +256,18 @@ export function SignUpPage() {
                     onChange={(e) => setBusinessName(e.target.value)}
                   />
                 </div>
-              </div>
 
-              <div className="field-group">
-                <label className="field-label" htmlFor="su-address">Service area / Address *</label>
-                <input
-                  id="su-address"
-                  className="auth-input provider"
-                  type="text"
-                  placeholder="Colombo 03, Western Province"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
-                />
+                <div className="field-group">
+                  <label className="field-label" htmlFor="su-address">Service area / Address</label>
+                  <input
+                    id="su-address"
+                    className="auth-input provider"
+                    type="text"
+                    placeholder="Colombo 03, Western Province"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="field-group">
