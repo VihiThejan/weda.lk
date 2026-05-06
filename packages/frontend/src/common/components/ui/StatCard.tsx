@@ -18,26 +18,26 @@ export function StatCard({ label, value, note }: StatCardProps) {
 
 const styles: Record<string, CSSProperties> = {
   card: {
-    border: "1px solid #d4dae2",
+    border: "1px solid #cbd5e1",
     borderRadius: "12px",
-    backgroundColor: "#fbfcfd",
+    backgroundColor: "#ffffff",
     padding: "14px",
     minWidth: "180px",
   },
   label: {
     margin: 0,
-    color: "#52606d",
+    color: "#475569",
     fontSize: "13px",
   },
   value: {
     margin: "6px 0",
     fontSize: "24px",
     fontWeight: 700,
-    color: "#1b2430",
+    color: "#0f172a",
   },
   note: {
     margin: 0,
-    color: "#6b7785",
+    color: "#64748b",
     fontSize: "12px",
   },
 };

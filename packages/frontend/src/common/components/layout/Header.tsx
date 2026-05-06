@@ -14,8 +14,8 @@ export function Header() {
 
 const styles: Record<string, CSSProperties> = {
   header: {
-    background: "linear-gradient(120deg, #ffffff, #edf4f2)",
-    border: "1px solid #d4dae2",
+    background: "linear-gradient(120deg, #ffffff, #f1f5f9)",
+    border: "1px solid #cbd5e1",
     borderRadius: "14px",
     padding: "18px 20px",
     display: "flex",
@@ -25,15 +25,16 @@ const styles: Record<string, CSSProperties> = {
   title: {
     margin: 0,
     fontSize: "20px",
+    color: "#0f172a",
   },
   subtitle: {
     margin: "4px 0 0",
-    color: "#52606d",
+    color: "#334155",
     fontSize: "13px",
   },
   badge: {
-    backgroundColor: "#d8f3e9",
-    color: "#095c42",
+    backgroundColor: "#e6f6f1",
+    color: "#0f766e",
     padding: "5px 10px",
     borderRadius: "999px",
     fontWeight: 700,

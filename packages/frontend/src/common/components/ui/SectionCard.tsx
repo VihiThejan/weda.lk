@@ -20,7 +20,7 @@ export function SectionCard({ title, children, actionText }: SectionCardProps) {
 
 const styles: Record<string, CSSProperties> = {
   wrapper: {
-    border: "1px solid #d4dae2",
+    border: "1px solid #cbd5e1",
     borderRadius: "12px",
     backgroundColor: "#ffffff",
     padding: "14px",
@@ -34,10 +34,11 @@ const styles: Record<string, CSSProperties> = {
   title: {
     margin: 0,
     fontSize: "16px",
+    color: "#0f172a",
   },
   action: {
     fontSize: "12px",
-    color: "#095c42",
+    color: "#0f766e",
     fontWeight: 600,
   },
 };

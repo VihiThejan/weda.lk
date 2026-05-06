@@ -54,10 +54,11 @@ const styles: Record<string, CSSProperties> = {
   },
   title: {
     margin: 0,
+    color: "#0f172a",
   },
   subtitle: {
     margin: "5px 0 0",
-    color: "#52606d",
+    color: "#475569",
     fontSize: "14px",
   },
   stats: {
@@ -71,14 +72,15 @@ const styles: Record<string, CSSProperties> = {
   },
   tableHead: {
     textAlign: "left",
-    color: "#52606d",
+    color: "#334155",
     fontSize: "12px",
-    borderBottom: "1px solid #e1e6ec",
+    borderBottom: "1px solid #cbd5e1",
     padding: "8px",
   },
   tableCell: {
     padding: "10px 8px",
-    borderBottom: "1px solid #eef2f6",
+    borderBottom: "1px solid #e2e8f0",
     fontSize: "14px",
+    color: "#0f172a",
   },
 };
