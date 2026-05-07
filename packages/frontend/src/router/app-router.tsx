@@ -7,8 +7,9 @@ import { SignUpPage } from "../features/auth/pages/SignUpPage";
 import { CustomerDashboardPage } from "../features/customer-dashboard/pages/CustomerDashboardPage";
 import { ProviderDashboardPage } from "../features/provider-dashboard/pages/ProviderDashboardPage";
 import { MaintenancePage } from "../features/maintenance/pages/MaintenancePage";
+import { AspectAnalysisPage } from "../features/component4";
 
-export const appRouter = createBrowserRouter([
+export const appRouter: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
   // Auth routes (public)
   { path: "/login/:role", element: <LoginPage /> },
   { path: "/signup/:role", element: <SignUpPage /> },
@@ -40,6 +41,7 @@ export const appRouter = createBrowserRouter([
         ),
       },
       { path: "maintenance", element: <MaintenancePage /> },
+      { path: "component4/aspect-analysis", element: <AspectAnalysisPage /> },
     ],
   },
 ]);
