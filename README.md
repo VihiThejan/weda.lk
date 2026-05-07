@@ -12,7 +12,8 @@ Monorepo with React (TypeScript) frontend, FastAPI backend, and MongoDB 6.0+.
    - `pnpm install`
    - backend Python dependencies from `packages/backend/README.md`
 5. Run apps:
-   - `pnpm dev`
+   - Frontend: `pnpm dev` (from repo root)
+   - Backend: `cd packages/backend` then `python -m uvicorn app.main:app --reload`
 
 ## Repository Layout
 
