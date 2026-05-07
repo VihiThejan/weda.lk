@@ -23,6 +23,12 @@ def _resolve_model_dir() -> Path:
     if env_value:
         return Path(env_value)
 
+    # Primary: model/ folder co-located with this component
+    local_dir = BASE_DIR / "model"
+    if local_dir.exists():
+        return local_dir
+
+    # Fallback: legacy Component4/ resource folder at repo root
     repo_root = _find_repo_root(BASE_DIR)
     return repo_root / "Component4" / "component4_model"
 
