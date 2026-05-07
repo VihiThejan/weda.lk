@@ -1,14 +1,3 @@
-{
-  "__version__": {
-    "pytorch": "2.10.0+cpu",
-    "sentence_transformers": "5.4.1",
-    "transformers": "5.0.0"
-  },
-  "default_prompt_name": null,
-  "model_type": "SentenceTransformer",
-  "prompts": {
-    "document": "",
-    "query": ""
-  },
-  "similarity_fn_name": "cosine"
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:1f412a9b0d8e1002d1bfcc63b6f770088d3caa4402387a16bd67984ff2773576
+size 281

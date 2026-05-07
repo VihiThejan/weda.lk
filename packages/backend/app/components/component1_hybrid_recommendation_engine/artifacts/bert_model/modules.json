@@ -1,20 +1,3 @@
-[
-  {
-    "idx": 0,
-    "name": "0",
-    "path": "",
-    "type": "sentence_transformers.base.modules.transformer.Transformer"
-  },
-  {
-    "idx": 1,
-    "name": "1",
-    "path": "1_Pooling",
-    "type": "sentence_transformers.sentence_transformer.modules.pooling.Pooling"
-  },
-  {
-    "idx": 2,
-    "name": "2",
-    "path": "2_Normalize",
-    "type": "sentence_transformers.sentence_transformer.modules.normalize.Normalize"
-  }
-]
+version https://git-lfs.github.com/spec/v1
+oid sha256:fa7d796a215e1b2416773062891923b191fc5a4849bc44e322997433c90f459c
+size 429
