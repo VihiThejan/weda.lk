@@ -57,8 +57,8 @@ async def analyze(payload: AnalyzeRequest) -> dict:
         raise HTTPException(
             status_code=503,
             detail=(
-                "TensorFlow is required for component4 analysis. "
-                "Install tensorflow in a Python 3.11/3.12 environment."
+                "Component 4 is unavailable in this Python environment. "
+                "The backend can run without TensorFlow."
             ),
         ) from exc
     except (ValueError, FileNotFoundError, RuntimeError) as exc:
@@ -89,8 +89,8 @@ async def analyze_batch(payload: AnalyzeBatchRequest) -> dict:
             raise HTTPException(
                 status_code=503,
                 detail=(
-                    "TensorFlow is required for component4 analysis. "
-                    "Install tensorflow in a Python 3.11/3.12 environment."
+                    "Component 4 is unavailable in this Python environment. "
+                    "The backend can run without TensorFlow."
                 ),
             ) from exc
         except (ValueError, FileNotFoundError, RuntimeError) as exc:

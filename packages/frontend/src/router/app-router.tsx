@@ -12,40 +12,45 @@ import { HybridRecommendationPage } from "../features/component1";
 
 export const appRouter: ReturnType<typeof createBrowserRouter> = createBrowserRouter(
   [
-  // Auth routes (public)
-  { path: "/login/:role", element: <LoginPage /> },
-  { path: "/signup/:role", element: <SignUpPage /> },
+    // Auth routes (public)
+    { path: "/login/:role", element: <LoginPage /> },
+    { path: "/signup/:role", element: <SignUpPage /> },
 
-  // Protected app routes
+    // Protected app routes
+    {
+      path: "/",
+      element: (
+        <ProtectedRoute>
+          <LayoutShell />
+        </ProtectedRoute>
+      ),
+      children: [
+        { index: true, element: <DashboardHomeRedirect /> },
+        {
+          path: "dashboard/customer",
+          element: (
+            <ProtectedRoute allowedRoles={["customer"]}>
+              <CustomerDashboardPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "dashboard/provider",
+          element: (
+            <ProtectedRoute allowedRoles={["provider"]}>
+              <ProviderDashboardPage />
+            </ProtectedRoute>
+          ),
+        },
+        { path: "maintenance", element: <MaintenancePage /> },
+        { path: "component1/recommendations", element: <HybridRecommendationPage /> },
+        { path: "component4/aspect-analysis", element: <AspectAnalysisPage /> },
+      ],
+    },
+  ],
   {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <LayoutShell />
-      </ProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <DashboardHomeRedirect /> },
-      {
-        path: "dashboard/customer",
-        element: (
-          <ProtectedRoute allowedRoles={["customer"]}>
-            <CustomerDashboardPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "dashboard/provider",
-        element: (
-          <ProtectedRoute allowedRoles={["provider"]}>
-            <ProviderDashboardPage />
-          </ProtectedRoute>
-        ),
-      },
-      { path: "maintenance", element: <MaintenancePage /> },
-      { path: "component1/recommendations", element: <HybridRecommendationPage /> },
-      { path: "component4/aspect-analysis", element: <AspectAnalysisPage /> },
-    ],
-  },
-  ]
+    future: {
+      v7_startTransition: true,
+    },
+  }
 );
