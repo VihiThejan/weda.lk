@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+import json
 import logging
 from pathlib import Path
 from threading import Lock
-from typing import Optional
+from typing import Any, Optional
 
+import joblib
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -28,9 +30,9 @@ WEIGHTS = {
 @dataclass
 class RecommenderArtifacts:
     provider_df: pd.DataFrame
-    interaction_df: pd.DataFrame
+    interaction_df: pd.DataFrame | None
     tfidf_vectorizer: TfidfVectorizer
-    tfidf_matrix: np.ndarray
+    tfidf_matrix: Any
     bert_model: SentenceTransformer
     provider_embeddings: np.ndarray
     user_preferences: dict
@@ -43,10 +45,15 @@ class HybridRecommenderService:
         self._loaded = False
         self._artifacts: RecommenderArtifacts | None = None
         self._paths = get_paths()
+        self._weights = WEIGHTS.copy()
 
     @property
     def is_loaded(self) -> bool:
         return self._loaded
+
+    @property
+    def weights(self) -> dict[str, float]:
+        return self._weights
 
     def ensure_loaded(self) -> None:
         if self._loaded:
@@ -59,30 +66,40 @@ class HybridRecommenderService:
 
     def _load_artifacts(self) -> RecommenderArtifacts:
         paths = self._paths
-        provider_df = self._load_provider_dataset(paths.provider_dataset)
-        interaction_df = self._load_interaction_dataset(paths.interaction_dataset)
+        self._weights = self._load_weights(paths.weights_path)
 
-        provider_df = self._prepare_provider_df(provider_df, interaction_df)
-
-        tfidf_vectorizer = TfidfVectorizer(
-            max_features=5000,
-            min_df=1,
-            max_df=0.95,
-            ngram_range=(1, 2),
-            stop_words="english",
+        provider_df = self._load_provider_df(
+            paths.provider_df_path,
+            paths.provider_dataset,
         )
-        tfidf_matrix = tfidf_vectorizer.fit_transform(provider_df["combined_text"])
+        provider_df = self._ensure_text_features(provider_df)
 
-        bert_model = SentenceTransformer("all-MiniLM-L6-v2", cache_folder=str(paths.models_dir))
+        provider_credibility: pd.DataFrame
+        user_preferences: dict
+        interaction_df: pd.DataFrame | None = None
+
+        if paths.provider_credibility_path.exists() and paths.user_preferences_path.exists():
+            provider_credibility = pd.read_pickle(paths.provider_credibility_path)
+            user_preferences = joblib.load(paths.user_preferences_path)
+        else:
+            interaction_df = self._load_interaction_dataset(paths.interaction_dataset)
+            provider_df = self._prepare_provider_df(provider_df, interaction_df)
+            provider_credibility, user_preferences = self._build_cf_components(
+                provider_df,
+                interaction_df,
+            )
+
+        tfidf_vectorizer, tfidf_matrix = self._load_or_build_tfidf(
+            paths.tfidf_vectorizer_path,
+            paths.tfidf_matrix_path,
+            provider_df,
+        )
+
+        bert_model = self._load_bert_model(paths)
         provider_embeddings = self._load_or_build_embeddings(
             paths.embeddings_cache,
             bert_model,
             provider_df["combined_text"].tolist(),
-        )
-
-        provider_credibility, user_preferences = self._build_cf_components(
-            provider_df,
-            interaction_df,
         )
 
         logger.info("Component 1 artifacts loaded")
@@ -108,22 +125,52 @@ class HybridRecommenderService:
             raise FileNotFoundError(f"Interaction dataset not found at {path}")
         return pd.read_excel(path)
 
-    def _prepare_provider_df(self, provider_df: pd.DataFrame, interaction_df: pd.DataFrame) -> pd.DataFrame:
-        provider_df = provider_df.copy()
+    def _load_provider_df(self, artifact_path: Path, dataset_path: Path) -> pd.DataFrame:
+        if artifact_path.exists():
+            return pd.read_pickle(artifact_path)
+        return self._load_provider_dataset(dataset_path)
 
-        if "description" not in provider_df.columns:
-            provider_df["description"] = ""
-        provider_df["description"] = provider_df["description"].fillna("")
+    def _load_or_build_tfidf(
+        self,
+        vectorizer_path: Path,
+        matrix_path: Path,
+        provider_df: pd.DataFrame,
+    ) -> tuple[TfidfVectorizer, Any]:
+        if vectorizer_path.exists() and matrix_path.exists():
+            return joblib.load(vectorizer_path), joblib.load(matrix_path)
 
-        if "service" not in provider_df.columns:
-            provider_df["service"] = ""
-        provider_df["service"] = provider_df["service"].fillna("")
-
-        provider_df["description_clean"] = provider_df["description"].apply(self._clean_text)
-        provider_df["service_clean"] = provider_df["service"].apply(self._clean_text)
-        provider_df["combined_text"] = (
-            provider_df["service_clean"].astype(str) + " " + provider_df["description_clean"].astype(str)
+        tfidf_vectorizer = TfidfVectorizer(
+            max_features=5000,
+            min_df=1,
+            max_df=0.95,
+            ngram_range=(1, 2),
+            stop_words="english",
         )
+        tfidf_matrix = tfidf_vectorizer.fit_transform(provider_df["combined_text"])
+        return tfidf_vectorizer, tfidf_matrix
+
+    def _load_bert_model(self, paths) -> SentenceTransformer:
+        if paths.bert_model_dir.exists():
+            return SentenceTransformer(str(paths.bert_model_dir))
+        return SentenceTransformer("all-MiniLM-L6-v2", cache_folder=str(paths.models_dir))
+
+    def _load_weights(self, path: Path) -> dict[str, float]:
+        if path.exists():
+            try:
+                with path.open("r", encoding="utf-8") as handle:
+                    data = json.load(handle)
+                if isinstance(data, dict):
+                    return {
+                        key: float(value)
+                        for key, value in data.items()
+                        if key in WEIGHTS
+                    }
+            except (json.JSONDecodeError, OSError, ValueError):
+                logger.warning("Unable to load weights from %s", path)
+        return WEIGHTS.copy()
+
+    def _prepare_provider_df(self, provider_df: pd.DataFrame, interaction_df: pd.DataFrame) -> pd.DataFrame:
+        provider_df = self._ensure_text_features(provider_df)
 
         if "booking_status" in interaction_df.columns:
             booking_status = interaction_df["booking_status"]
@@ -159,6 +206,26 @@ class HybridRecommenderService:
         if pd.isna(text):
             return ""
         return str(text).lower()
+
+    def _ensure_text_features(self, provider_df: pd.DataFrame) -> pd.DataFrame:
+        provider_df = provider_df.copy()
+
+        if "description" not in provider_df.columns:
+            provider_df["description"] = ""
+        provider_df["description"] = provider_df["description"].fillna("")
+
+        if "service" not in provider_df.columns:
+            provider_df["service"] = ""
+        provider_df["service"] = provider_df["service"].fillna("")
+
+        provider_df["description_clean"] = provider_df["description"].apply(self._clean_text)
+        provider_df["service_clean"] = provider_df["service"].apply(self._clean_text)
+        provider_df["combined_text"] = (
+            provider_df["service_clean"].astype(str)
+            + " "
+            + provider_df["description_clean"].astype(str)
+        )
+        return provider_df
 
     def _load_or_build_embeddings(
         self,
@@ -252,10 +319,11 @@ class HybridRecommenderService:
         tfidf_norm = self.normalize_scores(tfidf_scores)
         bert_norm = self.normalize_scores(bert_scores)
         cf_norm = self.normalize_scores(cf_scores)
+        weights = self._weights
         hybrid_scores = (
-            WEIGHTS["tfidf"] * tfidf_norm
-            + WEIGHTS["bert"] * bert_norm
-            + WEIGHTS["cf"] * cf_norm
+            weights["tfidf"] * tfidf_norm
+            + weights["bert"] * bert_norm
+            + weights["cf"] * cf_norm
         )
         return hybrid_scores
 
@@ -369,7 +437,7 @@ class HybridRecommenderService:
             "timestamp": datetime.now().isoformat(),
             "total_results": len(recommendations),
             "recommendations": recommendations,
-            "weights_used": WEIGHTS,
+            "weights_used": self._weights,
         }
 
     def _require_artifacts(self) -> RecommenderArtifacts:
