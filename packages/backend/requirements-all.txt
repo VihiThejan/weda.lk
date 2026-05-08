@@ -1,3 +1,4 @@
+# Combined backend + dev requirements (Python 3.14 compatible)
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 motor>=3.6.0
@@ -11,9 +12,14 @@ scipy>=1.10.0
 sentence-transformers>=2.2.0
 transformers>=4.30.0
 torch>=2.0.0
-# Component 4's BiLSTM-CRF model is optional and only works on Python versions
-# supported by TensorFlow.
-tensorflow>=2.16.0; python_version < "3.13"
-openpyxl>=3.0.0
+openpyxl>=3.1.0
 requests>=2.28.0
 tqdm>=4.65.0
+
+# Dev tools
+pytest>=8.3.0
+httpx>=0.28.0
+ruff>=0.11.0
+
+# Optional ML (not available on Python 3.14)
+tensorflow>=2.16.0; python_version < "3.13"

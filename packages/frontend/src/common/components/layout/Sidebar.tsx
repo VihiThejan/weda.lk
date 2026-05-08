@@ -5,12 +5,14 @@ import { useAuth } from "../../../auth/AuthContext";
 const customerNavItems = [
   { to: "/dashboard/customer", label: "Customer Dashboard" },
   { to: "/maintenance", label: "Maintenance" },
+  { to: "/component1/recommendations", label: "Hybrid Recommendations" },
   { to: "/component4/aspect-analysis", label: "Aspect Analyser" },
 ];
 
 const providerNavItems = [
   { to: "/dashboard/provider", label: "Provider Dashboard" },
   { to: "/maintenance", label: "Maintenance" },
+  { to: "/component1/recommendations", label: "Hybrid Recommendations" },
   { to: "/component4/aspect-analysis", label: "Aspect Analyser" },
 ];
 

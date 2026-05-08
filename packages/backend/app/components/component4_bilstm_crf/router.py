@@ -53,6 +53,14 @@ async def analyze(payload: AnalyzeRequest) -> dict:
     service = get_bilstm_crf_service()
     try:
         result = service.analyze(payload.text)
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Component 4 is unavailable in this Python environment. "
+                "The backend can run without TensorFlow."
+            ),
+        ) from exc
     except (ValueError, FileNotFoundError, RuntimeError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -77,6 +85,14 @@ async def analyze_batch(payload: AnalyzeBatchRequest) -> dict:
     for text in payload.texts:
         try:
             result = service.analyze(text)
+        except ImportError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Component 4 is unavailable in this Python environment. "
+                    "The backend can run without TensorFlow."
+                ),
+            ) from exc
         except (ValueError, FileNotFoundError, RuntimeError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

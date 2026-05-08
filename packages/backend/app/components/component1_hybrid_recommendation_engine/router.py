@@ -9,7 +9,7 @@ from .schemas import (
     RecommendRequest,
     RecommendResponse,
 )
-from .service import get_recommender_service, WEIGHTS
+from .service import get_recommender_service
 
 router = APIRouter(prefix="/component1", tags=["component1"])
 
@@ -36,7 +36,7 @@ async def status() -> dict:
         "status": "ready",
         "recommender_loaded": service.is_loaded,
         "total_providers": total_providers,
-        "weights": WEIGHTS,
+        "weights": service.weights,
         "timestamp": datetime.now().isoformat(),
     }
 
