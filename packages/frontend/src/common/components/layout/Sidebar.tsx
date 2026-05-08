@@ -7,6 +7,9 @@ const customerNavItems = [
   { to: "/maintenance", label: "Maintenance" },
   { to: "/component1/recommendations", label: "Hybrid Recommendations" },
   { to: "/component4/aspect-analysis", label: "Aspect Analyser" },
+  { to: "/component4/review-credibility", label: "Review Credibility" },
+  { to: "/component4/provider-credibility", label: "Provider Credibility" },
+  { to: "/component4/fraud-blending", label: "Fraud + Blending Demo" },
 ];
 
 const providerNavItems = [
@@ -14,6 +17,9 @@ const providerNavItems = [
   { to: "/maintenance", label: "Maintenance" },
   { to: "/component1/recommendations", label: "Hybrid Recommendations" },
   { to: "/component4/aspect-analysis", label: "Aspect Analyser" },
+  { to: "/component4/review-credibility", label: "Review Credibility" },
+  { to: "/component4/provider-credibility", label: "Provider Credibility" },
+  { to: "/component4/fraud-blending", label: "Fraud + Blending Demo" },
 ];
 
 export function Sidebar() {

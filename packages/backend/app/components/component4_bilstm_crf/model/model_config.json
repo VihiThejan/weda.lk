@@ -17,7 +17,7 @@
     "I-TIME",
     "O"
   ],
-  "best_val_loss": 0.0003801584243774414,
+  "best_val_loss": 0.0003597577412923177,
   "macro_f1": 1.0,
   "aspect_f1": {
     "QUAL": 1.0,
