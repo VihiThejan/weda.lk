@@ -7,7 +7,7 @@ import { SignUpPage } from "../features/auth/pages/SignUpPage";
 import { CustomerDashboardPage } from "../features/customer-dashboard/pages/CustomerDashboardPage";
 import { ProviderDashboardPage } from "../features/provider-dashboard/pages/ProviderDashboardPage";
 import { MaintenancePage } from "../features/maintenance/pages/MaintenancePage";
-import { AspectAnalysisPage, ReviewCredibilityPage, ProviderCredibilityPage, FraudBlendingDemoPage } from "../features/component4";
+import { AspectAnalysisPage, ReviewCredibilityPage, ProviderCredibilityPage, FraudBlendingDemoPage, PipelineDemoPage } from "../features/component4";
 import { HybridRecommendationPage } from "../features/component1";
 
 export const appRouter: ReturnType<typeof createBrowserRouter> = createBrowserRouter(
@@ -48,6 +48,7 @@ export const appRouter: ReturnType<typeof createBrowserRouter> = createBrowserRo
         { path: "component4/review-credibility", element: <ReviewCredibilityPage /> },
         { path: "component4/provider-credibility", element: <ProviderCredibilityPage /> },
         { path: "component4/fraud-blending", element: <FraudBlendingDemoPage /> },
+        { path: "component4/pipeline", element: <PipelineDemoPage /> },
       ],
     },
   ],

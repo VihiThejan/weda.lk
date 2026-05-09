@@ -65,6 +65,7 @@ export type ProviderCredibility = {
   avg_rating?: number | null;
   total_reviews?: number | null;
   suspicious_count?: number | null;
+  explanation?: string | null;
 };
 
 export type ProviderRankEntry = ProviderCredibility & { rank: number };
@@ -73,5 +74,15 @@ export type RankProvidersResponse = {
   status: string;
   total: number;
   ranked: ProviderRankEntry[];
+  timestamp: string;
+};
+
+export type PipelineRunResponse = {
+  status: string;
+  source: "random" | "component3";
+  providers_evaluated: number;
+  top_n: number;
+  ranked: ProviderRankEntry[];
+  note: string;
   timestamp: string;
 };

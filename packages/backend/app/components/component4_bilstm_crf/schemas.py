@@ -96,8 +96,9 @@ class ProviderCredibilityResponse(BaseModel):
     fraud_ratio: Optional[float] = None
     recency_boost: Optional[float] = None
     avg_rating: Optional[float] = None
-    total_reviews: Optional[float] = None
-    suspicious_count: Optional[float] = None
+    total_reviews: Optional[int] = None
+    suspicious_count: Optional[int] = None
+    explanation: Optional[str] = None
 
 
 class ProviderRankEntry(BaseModel):
@@ -110,8 +111,9 @@ class ProviderRankEntry(BaseModel):
     fraud_ratio: Optional[float] = None
     recency_boost: Optional[float] = None
     avg_rating: Optional[float] = None
-    total_reviews: Optional[float] = None
-    suspicious_count: Optional[float] = None
+    total_reviews: Optional[int] = None
+    suspicious_count: Optional[int] = None
+    explanation: Optional[str] = None
 
 
 class RankProvidersRequest(BaseModel):
@@ -122,4 +124,19 @@ class RankProvidersResponse(BaseModel):
     status: str
     total: int
     ranked: list[ProviderRankEntry]
+    timestamp: str
+
+
+class PipelineRunRequest(BaseModel):
+    provider_ids: Optional[list[str]] = Field(None, max_length=20)
+    top_n: int = Field(5, ge=1, le=10)
+
+
+class PipelineRunResponse(BaseModel):
+    status: str
+    source: str          # "random" | "component3"
+    providers_evaluated: int
+    top_n: int
+    ranked: list[ProviderRankEntry]
+    note: str
     timestamp: str

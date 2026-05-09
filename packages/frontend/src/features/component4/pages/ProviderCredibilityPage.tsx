@@ -4,6 +4,8 @@ import { SectionCard, StatCard } from "../../../common/components/ui";
 import type { ProviderCredibility, ProviderRankEntry } from "../types";
 import { getProviderCredibility, rankProviders } from "../services/aspectAnalysisService";
 
+const SAMPLE_PROVIDERS = ["P1", "P10", "P10174", "P10239", "P1003"];
+
 const TIER_COLOR: Record<string, string> = {
   Elite: "#7c3aed",
   Trusted: "#0f766e",
@@ -72,6 +74,9 @@ function ProviderCard({ data }: { data: ProviderCredibility }) {
         <div style={{ marginBottom: "10px" }}>
           <ScoreBar value={data.S_final} />
         </div>
+      )}
+      {data.explanation && (
+        <p style={styles.explanation}>{data.explanation}</p>
       )}
       <table style={styles.table}>
         <tbody>
@@ -186,12 +191,41 @@ export function ProviderCredibilityPage() {
       </div>
 
       <SectionCard title="Provider Lookup">
-        <form onSubmit={handleLookup} style={styles.lookupForm}>
+        <p style={styles.sampleLabel}>Quick samples</p>
+        <div style={styles.sampleChips}>
+          {SAMPLE_PROVIDERS.map((id) => (
+            <button
+              key={id}
+              type="button"
+              style={{
+                ...styles.sampleChip,
+                borderColor: lookupId === id ? "#0f766e" : "#cbd5e1",
+                backgroundColor: lookupId === id ? "#f0fdf9" : "#ffffff",
+                color: lookupId === id ? "#0f766e" : "#334155",
+                fontWeight: lookupId === id ? 700 : 400,
+              }}
+              onClick={() => {
+                setLookupId(id);
+                setLookupLoading(true);
+                setLookupError(null);
+                setLookupResult(null);
+                getProviderCredibility(id)
+                  .then(setLookupResult)
+                  .catch((err) => setLookupError(err instanceof Error ? err.message : "Lookup failed."))
+                  .finally(() => setLookupLoading(false));
+              }}
+            >
+              {id}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleLookup} style={{ ...styles.lookupForm, marginTop: "12px" }}>
           <input
             type="text"
             value={lookupId}
             onChange={(e) => setLookupId(e.target.value)}
-            placeholder="Enter provider ID  e.g. P1, P42, P1000"
+            placeholder="Or type any provider ID  e.g. P42, P1000"
             style={styles.input}
           />
           <button
@@ -215,13 +249,24 @@ export function ProviderCredibilityPage() {
       </SectionCard>
 
       <SectionCard title="Compare & Rank Providers">
-        <div style={styles.rankInputRow}>
+        <div style={styles.rankTopRow}>
+          <p style={styles.sampleLabel}>Load sample set</p>
+          <button
+            type="button"
+            style={styles.btnSecondary}
+            onClick={() => setRankIds(SAMPLE_PROVIDERS)}
+          >
+            Load {SAMPLE_PROVIDERS.join(", ")}
+          </button>
+        </div>
+
+        <div style={{ ...styles.rankInputRow, marginTop: "12px" }}>
           <input
             type="text"
             value={rankInput}
             onChange={(e) => setRankInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addRankId())}
-            placeholder="Type a provider ID and press Add or Enter"
+            placeholder="Or type a provider ID and press Add / Enter"
             style={{ ...styles.input, flex: 1 }}
             disabled={rankIds.length >= 10}
           />
@@ -287,7 +332,18 @@ const styles: Record<string, CSSProperties> = {
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
     gap: "10px",
   },
+  sampleLabel: { margin: "0 0 8px", fontSize: "12px", fontWeight: 600, color: "#64748b", textTransform: "uppercase" as const, letterSpacing: "0.04em" },
+  sampleChips: { display: "flex", flexWrap: "wrap" as const, gap: "8px" },
+  sampleChip: {
+    padding: "5px 14px",
+    borderRadius: "999px",
+    border: "1px solid",
+    fontSize: "13px",
+    cursor: "pointer",
+    transition: "all 120ms ease",
+  },
   lookupForm: { display: "flex", gap: "10px", alignItems: "center" },
+  rankTopRow: { display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" as const, gap: "8px" },
   rankInputRow: { display: "flex", gap: "10px", alignItems: "center" },
   input: {
     padding: "10px 14px",
@@ -363,6 +419,16 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: "12px",
   },
   providerId: { fontSize: "16px", fontWeight: 700, color: "#0f172a" },
+  explanation: {
+    margin: "0 0 12px",
+    fontSize: "13px",
+    color: "#475569",
+    lineHeight: "1.5",
+    padding: "10px 12px",
+    backgroundColor: "#f8fafc",
+    borderRadius: "8px",
+    borderLeft: "3px solid #0f766e",
+  },
   table: { width: "100%", borderCollapse: "collapse" },
   tdLabel: {
     padding: "6px 12px 6px 0",

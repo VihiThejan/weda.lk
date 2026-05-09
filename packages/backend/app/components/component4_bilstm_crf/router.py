@@ -18,9 +18,11 @@ from .schemas import (
     RankProvidersRequest,
     RankProvidersResponse,
     ProviderRankEntry,
+    PipelineRunRequest,
+    PipelineRunResponse,
 )
 from .service import get_bilstm_crf_service
-from .fraud_service import get_fraud_detection_service
+from .fraud_service import get_fraud_detection_service, extract_linguistic_features
 from .credibility_service import get_credibility_service
 
 router = APIRouter(prefix="/component4", tags=["component4"])
@@ -221,5 +223,48 @@ async def rank_providers(payload: RankProvidersRequest) -> dict:
         "status": "success",
         "total": len(ranked),
         "ranked": ranked,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+# ─── Component 3 → 4 Pipeline ─────────────────────────────────────────────────
+
+@router.get("/pipeline/run", response_model=PipelineRunResponse)
+async def pipeline_run_random() -> dict:
+    """
+    Run the Component 3 → 4 pipeline with randomly sampled providers.
+    Used when Component 3 is not yet integrated.
+    """
+    service = get_credibility_service()
+    try:
+        result = service.run_pipeline(provider_ids=None, top_n=5)
+    except (FileNotFoundError, RuntimeError) as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {
+        "status": "success",
+        **result,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@router.post("/pipeline/run", response_model=PipelineRunResponse)
+async def pipeline_run(payload: PipelineRunRequest) -> dict:
+    """
+    Run the Component 3 → 4 pipeline with explicit provider IDs (from Component 3)
+    or randomly if provider_ids is omitted / empty.
+    """
+    service = get_credibility_service()
+    try:
+        result = service.run_pipeline(
+            provider_ids=payload.provider_ids or None,
+            top_n=payload.top_n,
+        )
+    except (FileNotFoundError, RuntimeError) as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return {
+        "status": "success",
+        **result,
         "timestamp": datetime.now().isoformat(),
     }

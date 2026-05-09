@@ -95,6 +95,61 @@ class CredibilityService:
             return 'Trusted'
         return 'Verified'
 
+    @staticmethod
+    def _generate_explanation(data: dict) -> str:
+        s_cred = data.get('S_cred')
+        s_overall = data.get('S_overall')
+        fraud_ratio = data.get('fraud_ratio') or 0.0
+        recency_boost = data.get('recency_boost') or 0.0
+        total_reviews = data.get('total_reviews') or 0
+
+        if s_cred is not None:
+            if s_cred >= 0.75:
+                cred_str = "highly credible credentials and experience"
+            elif s_cred >= 0.5:
+                cred_str = "moderate credentials and experience"
+            else:
+                cred_str = "limited verifiable credentials"
+        else:
+            cred_str = "credentials not evaluated"
+
+        if s_overall is not None:
+            if s_overall >= 0.75:
+                overall_str = "customers consistently rate the service highly"
+            elif s_overall >= 0.5:
+                overall_str = "customer ratings are generally positive"
+            else:
+                overall_str = "customer ratings show mixed feedback"
+        else:
+            overall_str = "customer ratings not available"
+
+        if fraud_ratio <= 0.05:
+            fraud_str = "reviews appear genuine"
+        elif fraud_ratio <= 0.20:
+            fraud_str = f"{fraud_ratio * 100:.0f}% of reviews flagged as suspicious"
+        else:
+            fraud_str = f"high fraud rate ({fraud_ratio * 100:.0f}% suspicious) — caution advised"
+
+        recency_str = (
+            "Recent activity is strong." if recency_boost >= 0.4
+            else "Recent activity is moderate." if recency_boost >= 0.15
+            else "Activity is dated."
+        )
+
+        review_str = (
+            f"Based on {total_reviews} review{'s' if total_reviews != 1 else ''}."
+            if total_reviews > 0 else ""
+        )
+
+        parts = [
+            f"Provider has {cred_str}; {overall_str}.",
+            f"{fraud_str.capitalize()}.",
+            recency_str,
+        ]
+        if review_str:
+            parts.append(review_str)
+        return " ".join(parts)
+
     def get_provider_credibility(self, provider_id: str) -> Optional[dict]:
         self.ensure_loaded()
         pid = str(provider_id)
@@ -108,12 +163,16 @@ class CredibilityService:
             'S_final': round(s_final, 4),
             'tier': self._assign_tier(s_final),
         }
-        for col in ('S_cred', 'S_overall', 'fraud_ratio', 'recency_boost',
-                    'avg_rating', 'total_reviews', 'suspicious_count'):
+        for col in ('S_cred', 'S_overall', 'fraud_ratio', 'recency_boost', 'avg_rating'):
             if col in row.index:
                 val = row[col]
                 result[col] = round(float(val), 4) if val is not None else None
+        for col in ('total_reviews', 'suspicious_count'):
+            if col in row.index:
+                val = row[col]
+                result[col] = int(float(val)) if val is not None else None
 
+        result['explanation'] = self._generate_explanation(result)
         return result
 
     def rank_providers(self, provider_ids: list[str]) -> list[dict]:
@@ -124,7 +183,10 @@ class CredibilityService:
             if cred:
                 known.append(cred)
             else:
-                unknown.append({'provider_id': str(pid), 'S_final': None, 'tier': 'Unknown'})
+                unknown.append({
+                    'provider_id': str(pid), 'S_final': None, 'tier': 'Unknown',
+                    'explanation': 'Provider not found in the credibility index.',
+                })
 
         known.sort(key=lambda x: x['S_final'], reverse=True)
         ranked = []
@@ -132,6 +194,55 @@ class CredibilityService:
             entry['rank'] = rank
             ranked.append(entry)
         return ranked
+
+    def get_random_providers(self, n: int = 8) -> list[str]:
+        """Sample n random provider IDs from the pre-computed index."""
+        self.ensure_loaded()
+        sample = self._df.sample(min(n, len(self._df)), random_state=None)
+        return sample.index.tolist()
+
+    def run_pipeline(
+        self,
+        provider_ids: Optional[list[str]] = None,
+        top_n: int = 5,
+    ) -> dict:
+        """
+        Component 3 → Component 4 pipeline.
+        If provider_ids is None, randomly samples 8 providers.
+        Returns top_n ranked by S_final with full breakdown + explanation.
+        """
+        self.ensure_loaded()
+
+        if provider_ids:
+            source = "component3"
+            note = (
+                f"Received {len(provider_ids)} provider IDs from Component 3. "
+                f"Ranked by S_final and returning Top-{top_n}."
+            )
+        else:
+            provider_ids = self.get_random_providers(n=8)
+            source = "random"
+            note = (
+                "Component 3 is not yet integrated. "
+                f"Randomly sampled {len(provider_ids)} providers from the pre-computed index "
+                f"and returning Top-{top_n} by S_final."
+            )
+
+        ranked = self.rank_providers(provider_ids)
+        top = [r for r in ranked if r.get('tier') != 'Unknown'][:top_n]
+
+        # Pad with unknowns only if we have fewer than top_n known providers
+        if len(top) < top_n:
+            unknowns = [r for r in ranked if r.get('tier') == 'Unknown']
+            top += unknowns[: top_n - len(top)]
+
+        return {
+            'source': source,
+            'providers_evaluated': len(provider_ids),
+            'top_n': top_n,
+            'ranked': top,
+            'note': note,
+        }
 
     @property
     def total_providers(self) -> int:

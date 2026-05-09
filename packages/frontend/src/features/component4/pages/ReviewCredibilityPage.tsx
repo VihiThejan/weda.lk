@@ -3,8 +3,61 @@ import type { CSSProperties } from "react";
 import { SectionCard, StatCard } from "../../../common/components/ui";
 import type { ReviewCredibilityResponse } from "../types";
 import { analyzeReviewCredibility } from "../services/aspectAnalysisService";
+import { DemoReviewPicker } from "../components/DemoReviewPicker";
 import { TokenHighlighter } from "../components/TokenHighlighter";
 import { AspectScorePanel } from "../components/AspectScorePanel";
+
+type DemoSample = {
+  text: string;
+  label: string;
+  rating: string;
+  userTotalReviews: string;
+  daysSincePrev: string;
+  providerDiversity: string;
+};
+
+const DEMO_SAMPLES: DemoSample[] = [
+  {
+    label: "Verified-looking",
+    text: "Excellent service , very professional and the price was fair .",
+    rating: "5",
+    userTotalReviews: "12",
+    daysSincePrev: "18",
+    providerDiversity: "4",
+  },
+  {
+    label: "Suspicious burst",
+    text: "Amazing amazing amazing !!! BEST SERVICE EVER !!!",
+    rating: "5",
+    userTotalReviews: "28",
+    daysSincePrev: "1",
+    providerDiversity: "1",
+  },
+  {
+    label: "Mixed feedback",
+    text: "Fixed the gas leak perfectly but arrived two hours late without calling .",
+    rating: "3",
+    userTotalReviews: "6",
+    daysSincePrev: "32",
+    providerDiversity: "2",
+  },
+  {
+    label: "Negative quality",
+    text: "Not satisfied with the repair quality , the AC stopped working again .",
+    rating: "2",
+    userTotalReviews: "4",
+    daysSincePrev: "45",
+    providerDiversity: "3",
+  },
+  {
+    label: "Communication focus",
+    text: "Very professional attitude , explained everything clearly before starting .",
+    rating: "5",
+    userTotalReviews: "8",
+    daysSincePrev: "22",
+    providerDiversity: "5",
+  },
+];
 
 const TRUST_COLORS: Record<string, string> = {
   Verified: "#16a34a",
@@ -68,6 +121,8 @@ export function ReviewCredibilityPage() {
   const [userTotalReviews, setUserTotalReviews] = useState("5");
   const [daysSincePrev, setDaysSincePrev] = useState("30");
   const [providerDiversity, setProviderDiversity] = useState("3");
+  const [daysSinceReview, setDaysSinceReview] = useState("30");
+  const [bookingStatus, setBookingStatus] = useState<1 | 0>(1);
   const [result, setResult] = useState<ReviewCredibilityResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +139,8 @@ export function ReviewCredibilityPage() {
         user_total_reviews: parseInt(userTotalReviews, 10) || 5,
         days_since_prev_review: parseFloat(daysSincePrev) || 30,
         user_provider_diversity: parseFloat(providerDiversity) || 3,
+        days_since_review: parseFloat(daysSinceReview) || 30,
+        booking_status: bookingStatus,
       };
       const data = await analyzeReviewCredibility(trimmed, behavioral);
       setResult(data);
@@ -92,6 +149,34 @@ export function ReviewCredibilityPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleDemoSelect(reviewText: string) {
+    const sample = DEMO_SAMPLES.find((s) => s.text === reviewText);
+    setText(reviewText);
+    if (sample) {
+      setRating(sample.rating);
+      setUserTotalReviews(sample.userTotalReviews);
+      setDaysSincePrev(sample.daysSincePrev);
+      setProviderDiversity(sample.providerDiversity);
+    }
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    const behavioral = sample
+      ? {
+          rating: parseFloat(sample.rating),
+          user_total_reviews: parseInt(sample.userTotalReviews, 10),
+          days_since_prev_review: parseFloat(sample.daysSincePrev),
+          user_provider_diversity: parseFloat(sample.providerDiversity),
+          days_since_review: parseFloat(daysSinceReview) || 30,
+          booking_status: bookingStatus,
+        }
+      : undefined;
+    analyzeReviewCredibility(reviewText.trim(), behavioral)
+      .then(setResult)
+      .catch((e) => setError(e instanceof Error ? e.message : "An unexpected error occurred."))
+      .finally(() => setLoading(false));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -117,6 +202,13 @@ export function ReviewCredibilityPage() {
         <StatCard label="Features"       value="13"    note="7 linguistic · 6 behavioral" />
         <StatCard label="Aspects"        value="4"     note="QUAL · PRICE · TIME · COMM" />
       </div>
+
+      <SectionCard title="Try a Sample Review">
+        <DemoReviewPicker selected={text} onSelect={handleDemoSelect} />
+        <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#64748b" }}>
+          Each sample preloads matching behavioral metadata (rating, review frequency, days since last review).
+        </p>
+      </SectionCard>
 
       <SectionCard title="Analyse a Review">
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -155,7 +247,8 @@ export function ReviewCredibilityPage() {
               {[
                 { label: "User's total reviews", value: userTotalReviews, setter: setUserTotalReviews },
                 { label: "Days since previous review", value: daysSincePrev, setter: setDaysSincePrev },
-                { label: "Provider diversity (# unique providers)", value: providerDiversity, setter: setProviderDiversity },
+                { label: "Provider diversity (# unique)", value: providerDiversity, setter: setProviderDiversity },
+                { label: "Days since this review was posted", value: daysSinceReview, setter: setDaysSinceReview },
               ].map(({ label, value, setter }) => (
                 <label key={label} style={styles.advancedLabel}>
                   {label}
@@ -168,6 +261,26 @@ export function ReviewCredibilityPage() {
                   />
                 </label>
               ))}
+              <label style={styles.advancedLabel}>
+                Booking verified
+                <div style={styles.toggleRow}>
+                  {([1, 0] as const).map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setBookingStatus(val)}
+                      style={{
+                        ...styles.toggleBtn,
+                        backgroundColor: bookingStatus === val ? "#0f766e" : "#ffffff",
+                        color: bookingStatus === val ? "#ffffff" : "#475569",
+                        borderColor: bookingStatus === val ? "#0f766e" : "#cbd5e1",
+                      }}
+                    >
+                      {val === 1 ? "Yes (confirmed)" : "No (unverified)"}
+                    </button>
+                  ))}
+                </div>
+              </label>
             </div>
           )}
 
@@ -287,6 +400,21 @@ const styles: Record<string, CSSProperties> = {
     gap: "4px",
     fontSize: "13px",
     color: "#475569",
+  },
+  toggleRow: {
+    display: "flex",
+    gap: "6px",
+    marginTop: "2px",
+  },
+  toggleBtn: {
+    flex: 1,
+    padding: "6px 8px",
+    borderRadius: "8px",
+    border: "1px solid",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 120ms ease",
   },
   input: {
     padding: "6px 10px",

@@ -4,6 +4,7 @@ import type {
   ReviewCredibilityResponse,
   ProviderCredibility,
   RankProvidersResponse,
+  PipelineRunResponse,
 } from "../types";
 
 const API_BASE = "http://localhost:8000/api/v1";
@@ -68,4 +69,19 @@ export async function rankProviders(providerIds: string[]): Promise<RankProvider
     body: JSON.stringify({ provider_ids: providerIds }),
   });
   return handleResponse<RankProvidersResponse>(res);
+}
+
+/** Run the Component 3 → 4 pipeline.
+ *  Pass providerIds from Component 3, or omit to use a random sample. */
+export async function runPipeline(providerIds?: string[], topN = 5): Promise<PipelineRunResponse> {
+  if (providerIds && providerIds.length > 0) {
+    const res = await fetch(`${API_BASE}/component4/pipeline/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ provider_ids: providerIds, top_n: topN }),
+    });
+    return handleResponse<PipelineRunResponse>(res);
+  }
+  const res = await fetch(`${API_BASE}/component4/pipeline/run`);
+  return handleResponse<PipelineRunResponse>(res);
 }

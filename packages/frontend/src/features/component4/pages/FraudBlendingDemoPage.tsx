@@ -141,9 +141,7 @@ export function FraudBlendingDemoPage() {
     const sample = DEMO_SAMPLES.find((item) => item.text === reviewText) ?? null;
     setText(reviewText);
     setSelectedSample(sample);
-    if (sample) {
-      void handleAnalyze(sample);
-    }
+    void handleAnalyze(sample ?? { id: "demo", label: "Demo", text: reviewText });
   }
 
   async function handleManualAnalyze(e: React.FormEvent) {
